@@ -1,0 +1,51 @@
+.black-box {
+  width: 100%;
+  height: 75px;
+  background-color: black;
+  position: top;
+  top: 50px;
+  left: 50px;
+  z-index: 1;
+}
+
+.tanggal {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.harga {
+  text-decoration: underline;
+}
+.section-title {
+  position: relative;
+  display: inline-block;
+}
+
+.section-title::before {
+  content: "";
+  position: absolute;
+  width: 0px;
+  height: 2px; /* Atur ketebalan garis bawah sesuai keinginan */
+  background-color: orange; /* Atur warna garis bawah sesuai keinginan */
+  bottom: 25px;
+  left: 0;
+  transition: width 0.3s ease; /* Animasi lebar garis bawah selama 0.3 detik */
+}
+
+.section-title:hover::before {
+  width: 100%; /* Ketika hover, garis bawah akan terbentang ke samping */
+}
+.member {
+  display: inline-block;
+  padding: 1rem 1rem;
+  vertical-align: middle;
+}
+.login {
+  color: white;
+}
+.titik {
+  color: orange;
+}
+.label {
+  color: white;
+}
