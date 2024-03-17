@@ -145,7 +145,7 @@ $imagePath = FCPATH. 'img/kop.jpeg';
     <td style="text-align: left;">
       <p>Kepala Sekolah</p>
       <p></p>
-      <p></p>
+      <p></p>v
       <p>Srima Deliana Damanik, S.Pd.</p>
     </td>
     
