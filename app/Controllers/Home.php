@@ -5,10 +5,16 @@ use App\Models\M_PKL;
 use Dompdf\Dompdf;
 use App\Libraries\Pdf;
 use TCPDF;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class Home extends BaseController
 { 
-    
+    protected $db;
+    public function __construct()
+    {
+        $this->db = \Config\Database::connect(); // Access the database connection via Dependency Injection
+    }
     public function dashboard(){
         if(session()->get('id')>0){
         $model = new M_PKL();
@@ -171,7 +177,7 @@ class Home extends BaseController
     $pdf->SetKeywords('Your Keywords');
     $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
     // Add a page
-    $pdf->AddPage();
+$pdf->AddPage();
 
 
     // Set some content to print
@@ -539,9 +545,14 @@ class Home extends BaseController
         $g= $this->request->getPost('bidang_pkl');
         $status= 'Belum Diterima';
         $surat= 'Tidak Ada';
-        $jumlah= '1';
+        $jumlah= '1 ';
+        $h= $this->request->getPost('tgl_mulai');
 		// $uploadedFile = $this->request->getFile('foto');
 		// $foto = $uploadedFile->getName();
+
+        $tanggal_mulai = date_create($h);
+        date_add($tanggal_mulai, date_interval_create_from_date_string("$f months")); // Menambahkan durasi bulan ke tanggal mulai
+        $tgl_selesai = date_format($tanggal_mulai, 'Y-m-d'); // Format tanggal selesai sesuai kebutuhan (misalnya 'Y-m-d')
 
 		$isi = array(
             'id_perusahaan' => $id_perusahaan,
@@ -554,6 +565,8 @@ class Home extends BaseController
             'status' => $status,
             'surat' => $surat,
             'jumlah' => $jumlah,
+            'tgl_mulai' => $h,
+            'tgl_selesai' => $tgl_selesai
      
 				);
 
@@ -1195,4 +1208,292 @@ public function aksi_ubah_foto_admin()
 		return redirect()->to('home/profile_admin');
 
 }
+public function laporan()
+{
+    if(session()->get('id')>0){
+    $model = new M_PKL();
+   
+
+    echo view('header');
+    echo view('menu');
+    echo view('laporan');
+    echo view('footer');
+} else {
+    return redirect()->to('home/login');
+}
+}
+public function aksi_laporan_pdf(){
+    $model = new M_PKL();
+    $id_user = session()->get('id');
+    $mulai = $this->request->getGetpost('mulai');
+    $selesai = $this->request->getGetPost('selesai');
+
+    // Memanggil model untuk mendapatkan data sesuai dengan ID pengguna
+    $data['satu'] = $model->cari2($id_user, $mulai, $selesai); // Menggunakan model cari2()
+
+    // Load library Dompdf
+    $dompdf = new \Dompdf\Dompdf();
+
+    // Render view 'print' menjadi HTML
+    $html = view('print', $data);
+
+    // Load HTML ke Dompdf
+    $dompdf->loadHtml($html);
+
+    // Setting ukuran dan orientasi kertas
+    $dompdf->setPaper('A4', 'portrait');
+
+    // Render PDF (Halaman)
+    $dompdf->render();
+
+    // Output file PDF (Download atau Tampil di browser)
+    $dompdf->stream("laporanPKL.pdf", array("Attachment" => false));
+}
+
+    public function aksi_laporan_excel() {
+        // Memuat model yang sesuai
+        $model = new M_PKL();
+    
+        // Tangkap tanggal mulai dan tanggal selesai dari form
+        $id_user = session()->get('id');
+        $mulai = $this->request->getPost('mulai2');
+        $selesai = $this->request->getPost('selesai2');
+    
+        // Memanggil model untuk mendapatkan data sesuai dengan ID pengguna
+        $data = $model->cari2($id_user, $mulai, $selesai);
+    
+        // Membuat objek Spreadsheet
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+    
+        // Judul laporan
+        $sheet->setCellValue('A1', 'Laporan Siswa Prakerind');
+    
+        // Merge cell untuk judul laporan
+        $sheet->mergeCells('A1:H1');
+    
+        // Set style untuk judul laporan
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+    
+        // Set style untuk cell judul laporan
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        
+        // Set header untuk kolom
+        $sheet->setCellValue('A2', 'NIS');
+        $sheet->setCellValue('B2', 'NAMA SISWA');
+        $sheet->setCellValue('C2', 'JK');
+        $sheet->setCellValue('D2', 'PROGRAM KEAHLIAN');
+        $sheet->setCellValue('E2', 'Nama PT');
+        $sheet->setCellValue('F2', 'Durasi PKL');
+        $sheet->setCellValue('G2', 'Tanggal Mulai');
+        $sheet->setCellValue('H2', 'Tanggal Selesai');
+    
+        // Mengatur lebar kolom
+        $sheet->getColumnDimension('A')->setWidth(15);
+        $sheet->getColumnDimension('B')->setWidth(15);
+        $sheet->getColumnDimension('C')->setWidth(30);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(20);
+        $sheet->getColumnDimension('F')->setWidth(15);
+        $sheet->getColumnDimension('G')->setWidth(15);
+        $sheet->getColumnDimension('H')->setWidth(15);
+    
+        // Membuat judul tebal
+        $sheet->getStyle('A2:H2')->getFont()->setBold(true);
+    
+        // Mengisi data ke dalam sheet
+        $rowIndex = 3; // Mulai dari baris 3 setelah judul dan header
+        foreach ($data as $row) {
+            $sheet->setCellValue('A' . $rowIndex, $row->nis);
+            $sheet->setCellValue('B' . $rowIndex, $row->nama_siswa);
+            $sheet->setCellValue('C' . $rowIndex, $row->jk_siswa);
+            $sheet->setCellValue('D' . $rowIndex, $row->bidang_pkl);
+            $sheet->setCellValue('E' . $rowIndex, $row->nama_perusahaan);
+            $sheet->setCellValue('F' . $rowIndex, $row->durasi_pkl);
+            $sheet->setCellValue('G' . $rowIndex, $row->tgl_mulai);
+            $sheet->setCellValue('H' . $rowIndex, $row->tgl_selesai);
+        
+            $rowIndex++;
+        }
+    
+        // Menambahkan border
+        $lastColumn = $sheet->getHighestColumn();
+        $lastRow = $sheet->getHighestRow();
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ];
+        $sheet->getStyle('A2:' . $lastColumn . $lastRow)->applyFromArray($styleArray);
+    
+        // Setelah mengisi data, simpan spreadsheet ke dalam file atau kirim ke browser
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'laporan.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+    }
+    public function laporan_admin()
+{
+    if(session()->get('id')>0){
+    $model = new M_PKL();
+   
+
+    echo view('header');
+    echo view('menu');
+    echo view('laporan_admin');
+    echo view('footer');
+} else {
+    return redirect()->to('home/login');
+}
+}
+public function aksi_laporan_pdf_admin(){
+    $model = new M_PKL();
+    $id_user = session()->get('id');
+    $mulai = $this->request->getGetpost('mulai');
+    $selesai = $this->request->getGetPost('selesai');
+
+    // Memanggil model untuk mendapatkan data sesuai dengan ID pengguna
+    $data['satu'] = $model->cari($id_user, $mulai, $selesai);
+
+    // Load library Dompdf
+    $dompdf = new \Dompdf\Dompdf();
+
+    // Render view 'print' menjadi HTML
+    $html = view('print', $data);
+
+    // Load HTML ke Dompdf
+    $dompdf->loadHtml($html);
+
+    // Setting ukuran dan orientasi kertas
+    $dompdf->setPaper('A4', 'portrait');
+
+    // Render PDF (Halaman)
+    $dompdf->render();
+
+    // Output file PDF (Download atau Tampil di browser)
+    $dompdf->stream("laporanPKL.pdf", array("Attachment" => false));
+}
+public function aksi_laporan_excel_admin() {
+    // Memuat model yang sesuai
+    $model = new M_PKL();
+
+    // Tangkap tanggal mulai dan tanggal selesai dari form
+    $id_user = session()->get('id');
+    $mulai = $this->request->getPost('mulai2');
+    $selesai = $this->request->getPost('selesai2');
+
+    // Memanggil model untuk mendapatkan data sesuai dengan ID pengguna
+    $data = $model->cari($id_user, $mulai, $selesai);
+
+    // Membuat objek Spreadsheet
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Judul laporan
+    $sheet->setCellValue('A1', 'Laporan Siswa Prakerind');
+
+    // Merge cell untuk judul laporan
+    $sheet->mergeCells('A1:H1');
+
+    // Set style untuk judul laporan
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+
+    // Set style untuk cell judul laporan
+    $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+    
+    // Set header untuk kolom
+    $sheet->setCellValue('A2', 'NIS');
+    $sheet->setCellValue('B2', 'NAMA SISWA');
+    $sheet->setCellValue('C2', 'JK');
+    $sheet->setCellValue('D2', 'PROGRAM KEAHLIAN');
+    $sheet->setCellValue('E2', 'Nama PT');
+    $sheet->setCellValue('F2', 'Durasi PKL');
+    $sheet->setCellValue('G2', 'Tanggal Mulai');
+    $sheet->setCellValue('H2', 'Tanggal Selesai');
+
+    // Mengatur lebar kolom
+    $sheet->getColumnDimension('A')->setWidth(15);
+    $sheet->getColumnDimension('B')->setWidth(15);
+    $sheet->getColumnDimension('C')->setWidth(30);
+    $sheet->getColumnDimension('D')->setWidth(20);
+    $sheet->getColumnDimension('E')->setWidth(20);
+    $sheet->getColumnDimension('F')->setWidth(15);
+    $sheet->getColumnDimension('G')->setWidth(15);
+    $sheet->getColumnDimension('H')->setWidth(15);
+
+    // Membuat judul tebal
+    $sheet->getStyle('A2:H2')->getFont()->setBold(true);
+
+    // Mengisi data ke dalam sheet
+    $rowIndex = 3; // Mulai dari baris 3 setelah judul dan header
+    foreach ($data as $row) {
+        $sheet->setCellValue('A' . $rowIndex, $row->nis);
+        $sheet->setCellValue('B' . $rowIndex, $row->nama_siswa);
+        $sheet->setCellValue('C' . $rowIndex, $row->jk_siswa);
+        $sheet->setCellValue('D' . $rowIndex, $row->bidang_pkl);
+        $sheet->setCellValue('E' . $rowIndex, $row->nama_perusahaan);
+        $sheet->setCellValue('F' . $rowIndex, $row->durasi_pkl);
+        $sheet->setCellValue('G' . $rowIndex, $row->tgl_mulai);
+        $sheet->setCellValue('H' . $rowIndex, $row->tgl_selesai);
+    
+        $rowIndex++;
+    }
+
+    // Menambahkan border
+    $lastColumn = $sheet->getHighestColumn();
+    $lastRow = $sheet->getHighestRow();
+    $styleArray = [
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            ],
+        ],
+    ];
+    $sheet->getStyle('A2:' . $lastColumn . $lastRow)->applyFromArray($styleArray);
+
+    // Setelah mengisi data, simpan spreadsheet ke dalam file atau kirim ke browser
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    $filename = 'laporan.xlsx';
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="' . $filename . '"');
+    header('Cache-Control: max-age=0');
+    $writer->save('php://output');
+}
+    public function windows_print_kajur(){
+     $model = new M_PKL();
+     $id_user = session()->get('id');
+     $mulai = $this->request->getPost('mulai');
+     $selesai = $this->request->getPost('selesai');
+ 
+     // Memanggil model untuk mendapatkan data sesuai dengan ID pengguna
+     $data['satu'] = $model->cari2($id_user, $mulai, $selesai);
+
+
+
+    
+    echo view('print_windows', $data);
+   
+    }
+    public function windows_print_admin(){
+        $model = new M_PKL();
+        $id_user = session()->get('id');
+        $mulai = $this->request->getPost('mulai');
+        $selesai = $this->request->getPost('selesai');
+    
+        // Memanggil model untuk mendapatkan data sesuai dengan ID pengguna
+        $data['satu'] = $model->cari($id_user, $mulai, $selesai);
+   
+   
+   
+       
+       echo view('print_windows', $data);
+      
+       }
+    
+    
+
 }

@@ -71,14 +71,10 @@ $imagePath = FCPATH. 'img/kop.jpeg';
       <p>Lamp : -</p>
       <p>Perihal : Permohonan PRAKERIND</p>
       <p></p>
-      <p></p>
-      <p></p>
     </td>
     
     <td style="text-align: right;">
       <p style="margin-bottom: 10px;">Batam, <?php echo date("D-d-M-Y"); ?></p>
-      <p></p>
-      <p></p>
       <p></p>
       <p></p>
       <p></p>
@@ -117,7 +113,9 @@ $imagePath = FCPATH. 'img/kop.jpeg';
                 <th scope="col">NIS</th>
                 <th scope="col">Nama</th>
                 <th scope="col">L/P</th>
-                <th scope="col">PROGRAM KEAHLIAN</th>                   
+                <th scope="col">PROGRAM KEAHLIAN</th>
+                <th scope="col">Tanggal Mulai</th>                  
+                <th scope="col">Tanggal Selesai</th>                  
             </tr>
         </thead>
         <tbody>
@@ -130,7 +128,9 @@ $imagePath = FCPATH. 'img/kop.jpeg';
                 <td><?= $satu->nis?></td>
                 <td><?= $satu->nama_siswa ?></td>
                 <td><?= $satu->jk_siswa ?></td>
-                <td><?= $satu->bidang_pkl ?></td>			
+                <td><?= $satu->bidang_pkl ?></td>
+                <td><?= $satu->tgl_mulai ?></td>		
+                <td><?= $satu->tgl_selesai ?></td>					
             </tr>
             <?php } ?>
         </tbody>
@@ -145,12 +145,14 @@ $imagePath = FCPATH. 'img/kop.jpeg';
     <td style="text-align: left;">
       <p>Kepala Sekolah</p>
       <p></p>
-      <p></p>v
+      <p></p>
+      <p></p>
       <p>Srima Deliana Damanik, S.Pd.</p>
     </td>
     
     <td style="text-align: right;">
       <p>Kepala Program Studi</p>
+      <p></p>
       <p></p>
       <p></p>
       <p><?= $dua->nama_kajur ?></p>

@@ -21,13 +21,21 @@
             text-align: center;
            
         }
-        
+        @media print {
+            #print-button {
+                display: none;
+            }
+        }
       
        
    </style>
    
 </head>
 <body>
+<!-- <script type="text/javascript">
+                window.print();
+            </script> -->
+            <button id="print-button" onclick="printPdf()">Print PDF</button>
 <p>Laporan Daftar Siswa Yang Melakukan PRAKERIND</p> <br>
             <table class="table-container" style="font-size: 10px;" border="1px">
             <thead>
@@ -61,6 +69,11 @@
             </tr>
             </tbody>
             <?php } ?>
-            </table>
+    </table>
+    <script>
+function printPdf() {
+    window.print();
+}
+</script>
 </body>
 </html>
