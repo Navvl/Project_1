@@ -2,7 +2,7 @@
             <div class="card">
               <div class="card-header">
                 <h4 class="card-title">Pelamar</h4>
-	<a href=" <?= base_url('home/print/')?>">
+	<a href=" <?= base_url('home/laporan/')?>">
 		<button class="btn btn-dark">
 			<i class="now-ui-icons files_paper"></i>
 		</button>
@@ -24,6 +24,8 @@
                     <th scope="col">Nama Perusahaan</th> 
                     <th scope="col">Alamat Perusahaan</th>                       
                     <th scope="col">Deskripsi Perusahaan</th> 
+                    <th scope="col">Tanggal Mulai</th> 
+                    <th scope="col">Tanggal Selesai</th>  
               
                   </tr>
                 </thead>
@@ -47,7 +49,8 @@
             <td><?= $abcd->nama_perusahaan?></td>
             <td><?= $abcd->alamat_perusahaan?></td>
 			<td><?= $abcd->deskripsi_perusahaan?></td>
-				
+      <td><?= $abcd->tgl_mulai?></td>
+            <td><?= $abcd->tgl_selesai?></td>
      
 			</tr>
 			<?php }  ?>

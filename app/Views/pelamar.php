@@ -3,7 +3,13 @@
               <div class="card-header">
                 <h4 class="card-title">Pelamar</h4>
               </div>
+              
               <div class="card-body">
+              <a href=" <?= base_url('home/laporan/')?>">
+		<button class="btn btn-dark">
+			<i class="now-ui-icons files_paper"></i>
+		</button>
+	</a>
                 <div class="table-responsive">
 		  <!-- Table with stripped rows -->
 		  <table class="table datatable" style="font-size: 12px;">
@@ -23,7 +29,9 @@
                     <th scope="col">Status</th> 
                     <th scope="col">Nama Perusahaan</th> 
                     <th scope="col">Alamat Perusahaan</th>                       
-                    <th scope="col">Deskripsi Perusahaan</th> 
+                    <th scope="col">Deskripsi Perusahaan</th>
+                    <th scope="col">Tanggal Mulai</th> 
+                    <th scope="col">Tanggal Selesai</th>  
                     <th scope="col">Aksi</th> 
                   </tr>
                 </thead>
@@ -50,8 +58,11 @@
             <td><?= $abcd->status?></td>
             <td><?= $abcd->nama_perusahaan?></td>
             <td><?= $abcd->alamat_perusahaan?></td>
+            <td><?= $abcd->deskripsi_perusahaan?></td>
+            <td><?= $abcd->tgl_mulai?></td>
+            <td><?= $abcd->tgl_selesai?></td>
       
-			<td><?= $abcd->deskripsi_perusahaan?></td>
+			
 			<td>
 			<a href="<?= base_url('home/buat_surat/' .$abcd->id_pelamaran) ?>">
       <button class="btn btn-info">

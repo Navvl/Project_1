@@ -12,7 +12,12 @@ class M_PKL extends Model
     protected $primaryKey2 = 'id_pelamaran';
     protected $allowedFields3 = ['status'];
     
-   
+    public function __construct()
+    {
+        parent::__construct();
+        $this->table = 'pelamaran'; // Setel nama tabel secara dinamis saat membuat objek model
+    }
+
     public function tampilPerusahaanByUser($id_user)
     {
         return $this->db->table('perusahaan')
@@ -63,24 +68,24 @@ public function tampil_sesuai_join4($table1, $tabel2, $tabel3, $tabel4, $on1, $o
                      ->get()
                      ->getResult(); 
 }
-public function tampil_sesuai_join4_2($id_user)
-{
-    // Subquery untuk mendapatkan id_sekolah
-    $subquery = $this->db->table('kajur')
-                         ->select('id_sekolah')
-                         ->where('id_user', $id_user)
-                         ->getCompiledSelect();
+    public function tampil_sesuai_join4_2($id_user)
+    {
+        // Subquery untuk mendapatkan id_sekolah
+        $subquery = $this->db->table('kajur')
+                            ->select('id_sekolah')
+                            ->where('id_user', $id_user)
+                            ->getCompiledSelect();
 
-    // Gunakan subquery dalam WHERE clause utama
-    return $this->db->table('pelamaran')
-                    ->select('*')
-                    ->where("pelamaran.id_sekolah = ($subquery)", null, false) // Tambahkan parameter false untuk menghindari escape karakter
-                    ->join('siswa', 'pelamaran.nis = siswa.nis', 'inner')
-                    ->join('perusahaan', 'pelamaran.id_perusahaan = perusahaan.id_perusahaan', 'inner')
-                    ->join('sekolah', 'pelamaran.id_sekolah = sekolah.id_sekolah', 'inner')
-                    ->get()
-                    ->getResult(); 
-}
+        // Gunakan subquery dalam WHERE clause utama
+        return $this->db->table('pelamaran')
+                        ->select('*')
+                        ->where("pelamaran.id_sekolah = ($subquery)", null, false) // Tambahkan parameter false untuk menghindari escape karakter
+                        ->join('siswa', 'pelamaran.nis = siswa.nis', 'inner')
+                        ->join('perusahaan', 'pelamaran.id_perusahaan = perusahaan.id_perusahaan', 'inner')
+                        ->join('sekolah', 'pelamaran.id_sekolah = sekolah.id_sekolah', 'inner')
+                        ->get()
+                        ->getResult(); 
+    }
 
 public function tampil_sesuai_join4_nis($table1, $tabel2, $tabel3, $tabel4, $on1, $on2, $on3, $nis)
 {
@@ -149,6 +154,38 @@ public function tampil_sesuai_join4_nis($table1, $tabel2, $tabel3, $tabel4, $on1
         ->getWhere($where)
         ->getRow();
     }
+    
+    public function cari($id_user, $tgl_mulai, $tgl_selesai)
+{
+    $query = "SELECT * 
+              FROM pelamaran
+              JOIN siswa ON pelamaran.nis = siswa.nis
+              JOIN perusahaan ON pelamaran.id_perusahaan = perusahaan.id_perusahaan
+              WHERE tgl_mulai >= ? 
+                AND tgl_selesai <= ? 
+                AND pelamaran.id_user = ?";
+
+    return $this->db->query($query, [$tgl_mulai, $tgl_selesai, $id_user])->getResult();
+}
+   
+    public function cari2($id_user, $tgl_mulai, $tgl_selesai)
+{
+    $query = "SELECT * 
+              FROM pelamaran
+              JOIN siswa ON pelamaran.nis = siswa.nis
+              JOIN perusahaan ON pelamaran.id_perusahaan = perusahaan.id_perusahaan
+              WHERE tgl_mulai = ? 
+                AND tgl_selesai = ? 
+                AND pelamaran.id_sekolah = (
+                    SELECT id_sekolah
+                    FROM kajur
+                    WHERE id_user = ?
+                )";
+                
+    return $this->db->query($query, [$tgl_mulai, $tgl_selesai, $id_user])->getResult();
+}
+
+
    public function getWhereWithJoin4Tbl($tabel1, $tabel2, $tabel3, $tabel4, $onCondition1, $onCondition2, $onCondition3, $where){
     return $this->db->table($tabel1)
         ->join($tabel2, $onCondition1)
@@ -204,8 +241,24 @@ public function getNamaKajurByIdPelamaran($id_pelamaran)
                         ->get()
                         ->getRow('nama_kajur');
     }
-
-
+    // public function laporan($tabel1, $tabel2,$tabel3, $onCondition,$onCondition2,$awal, $akhir, $field){
+    //     return $this->db->table($tabel1)
+    //         ->join($tabel2, $onCondition)
+    //         ->join($tabel3, $onCondition2)
+    //         ->getWhere($field." between '$awal' and '$akhir'" )
+    //         ->getResult();
+    //     }
+        public function laporan($tabel1, $tabel2, $tabel3, $onCondition, $onCondition2, $awal, $akhir){
+    return $this->db->table($tabel1)
+        ->join($tabel2, $onCondition)
+        ->join($tabel3, $onCondition2)
+        ->where("tgl_mulai >= '$awal'")
+        ->where("tgl_selesai <= '$akhir'")
+        ->get()
+        ->getResult();
+}
+        
+    
 }
 
 

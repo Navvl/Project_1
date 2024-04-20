@@ -86,13 +86,28 @@
                   <div class="col-md-6 pr-1">
                       <div class="form-group">
                         <label>Durasi PKL</label>
-                        <input type="text" class="form-control"  placeholder="Durasi PKL" name="durasi_pkl">
+                        <select name="durasi_pkl" id="durasi_pkl" class="form-control">
+                            <option value="Pilih">Pilih Durasi</option>
+                           
+                                <option value="1">1 Bulan</option>
+                                <option value="2">2 Bulan</option>
+                                <option value="3">3 Bulan</option>
+                                <option value="4">4 Bulan</option>
+                                <option value="5">5 Bulan</option>
+                        </select>
                       </div>
                     </div>
                     <div class="col-md-6 pr-1">
                       <div class="form-group">
                         <label>Bidang PKL</label>
                         <input type="text" class="form-control"  placeholder="Bidang PKL" name="bidang_pkl">
+                      </div>
+                    </div>
+
+                    <div class="col-md-6 pr-1">
+                      <div class="form-group">
+                        <label>Tanggal Mulai PKL</label>
+                        <input type="date" class="form-control"  placeholder="Tanggal Mulai" name="tgl_mulai">
                       </div>
                     </div>
                 
